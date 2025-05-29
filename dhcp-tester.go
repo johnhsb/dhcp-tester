@@ -247,7 +247,7 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	
 	// 헤더
 	fmt.Printf("%s%s╔══════════════════════════════════════════════════════════════════════╗%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
-	fmt.Printf("%s%s║                    DHCP 서버 성능 테스트 실시간 모니터                     ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
+	fmt.Printf("%s%s║                    DHCP 서버 성능 테스트 실시간 모니터               ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Printf("%s%s╚══════════════════════════════════════════════════════════════════════╝%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Println()
 	
@@ -290,7 +290,7 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	fmt.Println("\n")
 	
 	// DHCP 단계별 통계
-	fmt.Printf("%s%s┌─ DHCP 4-Way Handshake 실시간 통계 ────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s┌─ DHCP 4-Way Handshake 실시간 통계 ───────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
 	discoverSent := atomic.LoadInt64(&dt.liveStats.DiscoverSent)
 	offerReceived := atomic.LoadInt64(&dt.liveStats.OfferReceived)
@@ -323,7 +323,7 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	dt.liveStats.mutex.RUnlock()
 	
 	fmt.Printf("%s│%s                                                                    %s%s│%s\n", ANSI_BLUE, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
-	fmt.Printf("%s│%s  평균 응답시간:                                                    %s%s│%s\n", ANSI_BLUE, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s│%s  평균 응답시간:                                              %s%s│%s\n", ANSI_BLUE, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
 	fmt.Printf("%s│%s    Discover → Offer: %s%10v%s      Request → ACK: %s%10v%s    %s%s│%s\n", 
 		ANSI_BLUE, ANSI_RESET, ANSI_YELLOW, avgDO, ANSI_RESET, ANSI_YELLOW, avgRA, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
 	
