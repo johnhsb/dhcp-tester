@@ -1606,7 +1606,7 @@ func (s *DHCPServer) printLiveStats() {
 	
 	// 헤더
 	fmt.Printf("%s%s╔════════════════════════════════════════════════════════════════════════╗%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
-	fmt.Printf("%s%s║               DHCP 서버 실시간 모니터링 (보안 강화)                      ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
+	fmt.Printf("%s%s║               DHCP 서버 실시간 모니터링 (보안 강화)                    ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Printf("%s%s╚════════════════════════════════════════════════════════════════════════╝%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Println()
 	
@@ -1638,11 +1638,13 @@ func (s *DHCPServer) printLiveStats() {
 	ackTx := atomic.LoadInt64(&s.stats.AckSent)
 	nakTx := atomic.LoadInt64(&s.stats.NakSent)
 	
-	fmt.Printf("%s%s┌─ DHCP 메시지 통계 ──────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
-	fmt.Printf("%s│%s  수신: DISCOVER %s%8d%s    REQUEST %s%8d%s                         %s%s│%s\n", 
-		ANSI_BLUE, ANSI_RESET, ANSI_WHITE, discoverRx, ANSI_RESET, ANSI_WHITE, requestRx, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
-	fmt.Printf("%s│%s  전송: OFFER    %s%8d%s    ACK     %s%8d%s    NAK %s%8d%s     %s%s│%s\n", 
-		ANSI_BLUE, ANSI_RESET, ANSI_WHITE, offerTx, ANSI_RESET, ANSI_WHITE, ackTx, ANSI_RESET, ANSI_WHITE, nakTx, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s┌─ DHCP 메시지 통계 ─────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  수신: DISCOVER %s%8d%s    REQUEST %s%8d%s                           %s%s│%s\n", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_WHITE, discoverRx, ANSI_RESET, ANSI_WHITE, requestRx, ANSI_RESET, 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  전송: OFFER    %s%8d%s    ACK     %s%8d%s    NAK %s%8d%s           %s%s│%s\n", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_WHITE, offerTx, ANSI_RESET, ANSI_WHITE, ackTx, ANSI_RESET, 
+		ANSI_WHITE, nakTx, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
 	// 성공률 계산
 	totalProcessed := discoverRx + requestRx
@@ -1651,8 +1653,8 @@ func (s *DHCPServer) printLiveStats() {
 	if totalProcessed > 0 {
 		successRate = float64(totalSuccess) / float64(totalProcessed) * 100
 	}
-	fmt.Printf("%s│%s  성공률: %s%.1f%%%s                                                  %s%s│%s\n", 
-		ANSI_BLUE, ANSI_RESET, ANSI_GREEN, successRate, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  성공률: %s%.1f%%%s                                                          %s%s│%s\n", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_GREEN, successRate, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	fmt.Printf("%s%s└────────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	fmt.Println()
 	
@@ -1688,10 +1690,12 @@ func (s *DHCPServer) printLiveStats() {
 	
 	if s.config.SecurityEnabled && (securityBlocked > 0 || rateLimited > 0) {
 		fmt.Printf("%s%s┌─ 보안 통계 ──────────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
-		fmt.Printf("%s│%s  총 차단: %s%8d%s 건    Rate Limit: %s%8d%s 건                %s%s│%s\n", 
-			ANSI_MAGENTA, ANSI_RESET, ANSI_RED, securityBlocked, ANSI_RESET, ANSI_RED, rateLimited, ANSI_RESET, ANSI_MAGENTA, ANSI_RESET)
-		fmt.Printf("%s│%s  잘못된 MAC: %s%5d%s 건    중복 XID: %s%8d%s 건                %s%s│%s\n", 
-			ANSI_MAGENTA, ANSI_RESET, ANSI_RED, invalidMACs, ANSI_RESET, ANSI_RED, duplicateXIDs, ANSI_RESET, ANSI_MAGENTA, ANSI_RESET)
+		fmt.Printf("%s%s│%s  총 차단: %s%8d%s 건    Rate Limit: %s%8d%s 건                 %s%s│%s\n", 
+			ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET, ANSI_RED, securityBlocked, ANSI_RESET, 
+			ANSI_RED, rateLimited, ANSI_RESET, ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
+		fmt.Printf("%s%s│%s  잘못된 MAC: %s%5d%s 건    중복 XID: %s%8d%s 건                %s%s│%s\n", 
+			ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET, ANSI_RED, invalidMACs, ANSI_RESET, 
+			ANSI_RED, duplicateXIDs, ANSI_RESET, ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
 		fmt.Printf("%s%s└──────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
 		fmt.Println()
 	}
@@ -1706,8 +1710,9 @@ func (s *DHCPServer) printLiveStats() {
 		
 		if poolHits > 0 || poolMisses > 0 {
 			hitRate := float64(poolHits) / float64(poolHits+poolMisses) * 100
-			fmt.Printf("%s│%s  캐시 Hit: %s%8d%s      Miss: %s%8d%s      Hit Rate: %s%.1f%%%s  %s%s│%s\n", 
-				ANSI_CYAN, ANSI_RESET, ANSI_GREEN, poolHits, ANSI_RESET, ANSI_YELLOW, poolMisses, ANSI_RESET, ANSI_GREEN, hitRate, ANSI_RESET, ANSI_CYAN, ANSI_RESET)
+			fmt.Printf("%s%s│%s  캐시 Hit: %s%8d%s      Miss: %s%8d%s      Hit Rate: %s%.1f%%%s  %s%s│%s\n", 
+				ANSI_BOLD, ANSI_CYAN, ANSI_RESET, ANSI_GREEN, poolHits, ANSI_RESET, ANSI_YELLOW, poolMisses, ANSI_RESET, 
+				ANSI_GREEN, hitRate, ANSI_RESET, ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 		}
 		
 		if s.workerPool != nil {
@@ -1716,9 +1721,9 @@ func (s *DHCPServer) printLiveStats() {
 			if isRunning {
 				status = "실행중"
 			}
-			fmt.Printf("%s│%s  워커 풀: %s%s%s      큐: %s%3d%s      처리: %s%8d%s      드롭: %s%3d%s  %s%s│%s\n", 
-				ANSI_CYAN, ANSI_RESET, ANSI_GREEN, status, ANSI_RESET, ANSI_YELLOW, queueSize, ANSI_RESET, 
-				ANSI_WHITE, processed, ANSI_RESET, ANSI_RED, dropped, ANSI_RESET, ANSI_CYAN, ANSI_RESET)
+			fmt.Printf("%s%s│%s  워커 풀: %s%s%s      큐: %s%3d%s      처리: %s%8d%s      드롭: %s%3d%s  %s%s│%s\n", 
+				ANSI_BOLD, ANSI_CYAN, ANSI_RESET, ANSI_GREEN, status, ANSI_RESET, ANSI_YELLOW, queueSize, ANSI_RESET, 
+				ANSI_WHITE, processed, ANSI_RESET, ANSI_RED, dropped, ANSI_RESET, ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 		}
 		
 		fmt.Printf("%s%s└──────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
