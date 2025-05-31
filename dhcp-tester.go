@@ -1124,7 +1124,7 @@ func generateMACAddress() [6]byte {
 
 // DHCP Discover 패킷 생성
 func createDiscoverPacket(xid uint32, clientMAC [6]byte, relayConfig *RelayConfig) []byte {
-	packet := make([]byte, 240)
+	packet := make([]byte, 236)
 	
 	packet[0] = 1
 	packet[1] = 1
@@ -1172,7 +1172,7 @@ func createDiscoverPacket(xid uint32, clientMAC [6]byte, relayConfig *RelayConfi
 
 // DHCP Request 패킷 생성
 func createRequestPacket(xid uint32, clientMAC [6]byte, requestedIP, serverIP uint32, relayConfig *RelayConfig) []byte {
-	packet := make([]byte, 240)
+	packet := make([]byte, 236)
 	
 	packet[0] = 1
 	packet[1] = 1
@@ -1231,7 +1231,7 @@ func createRequestPacket(xid uint32, clientMAC [6]byte, requestedIP, serverIP ui
 // DHCP 패킷 파싱
 func parseDHCPPacket(data []byte) (*DHCPPacket, error) {
 	if len(data) < 240 {
-		return nil, fmt.Errorf("패킷이 너무 짧습니다")
+		return nil, fmt.Errorf("패킷이 너무 짧습니다: %d바이트 (최소 240바이트 필요)", len(data))
 	}
 	
 	packet := &DHCPPacket{}
@@ -1251,9 +1251,14 @@ func parseDHCPPacket(data []byte) (*DHCPPacket, error) {
 	copy(packet.Chaddr[:], data[28:44])
 	copy(packet.Sname[:], data[44:108])
 	copy(packet.File[:], data[108:236])
-	
-	if len(data) > 240 && bytes.Equal(data[236:240], []byte{0x63, 0x82, 0x53, 0x63}) {
-		packet.Options = data[240:]
+
+	// Magic Cookie 검증 및 옵션 추출
+	if len(data) >= 240 && bytes.Equal(data[236:240], []byte{0x63, 0x82, 0x53, 0x63}) {
+		if len(data) > 240 {
+			packet.Options = data[240:]
+		}
+	} else {
+		return nil, fmt.Errorf("잘못된 DHCP Magic Cookie")
 	}
 	
 	return packet, nil
@@ -1800,7 +1805,7 @@ func (dt *DHCPTester) RunPerformanceTest(numClients int, concurrency int, showPr
 	}
 }
 
-// 실시간 통계로 테스트 실행
+// 실시간 통계로 테스트 실행 (채널 없는 안전한 버전)
 func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Statistics {
 	fmt.Printf("DHCP 서버 성능 테스트 시작 (보안 강화 및 성능 최적화 모드)\n")
 	fmt.Printf("대상 서버: %s:%d\n", dt.serverIP, dt.serverPort)
@@ -1822,8 +1827,11 @@ func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Sta
 	
 	startTime := time.Now()
 	
-	resultChan := make(chan TestResult, numClients)
+	// 채널 대신 작업 큐 사용
 	workChan := make(chan string, numClients)
+	
+	// 완료된 작업 수를 추적하는 카운터
+	var completedCount int64
 	
 	for i := 0; i < numClients; i++ {
 		workChan <- fmt.Sprintf("client_%05d", i+1)
@@ -1848,19 +1856,40 @@ func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Sta
 					submitted := dt.workerPool.Submit(func() {
 						result := dt.testSingleClient(clientID)
 						atomic.AddInt64(&dt.totalCount, 1)
-						resultChan <- result
+						
+						// 결과를 직접 저장 (채널 없이)
+						dt.resultsMutex.Lock()
+						dt.results = append(dt.results, result)
+						dt.resultsMutex.Unlock()
+						
+						// 완료 카운터 증가
+						atomic.AddInt64(&completedCount, 1)
 					})
 					if !submitted {
-						// 워커 풀이 가득 참 - 직접 실행
+						// 워커 풀이 가득 함 - 직접 실행
 						result := dt.testSingleClient(clientID)
 						atomic.AddInt64(&dt.totalCount, 1)
-						resultChan <- result
+						
+						// 결과를 직접 저장 (채널 없이)
+						dt.resultsMutex.Lock()
+						dt.results = append(dt.results, result)
+						dt.resultsMutex.Unlock()
+						
+						// 완료 카운터 증가
+						atomic.AddInt64(&completedCount, 1)
 					}
 				} else {
-					// 기존 방식
+					// 기존 방식 (채널 없이 직접 저장)
 					result := dt.testSingleClient(clientID)
 					atomic.AddInt64(&dt.totalCount, 1)
-					resultChan <- result
+					
+					// 결과를 직접 저장 (채널 없이)
+					dt.resultsMutex.Lock()
+					dt.results = append(dt.results, result)
+					dt.resultsMutex.Unlock()
+					
+					// 완료 카운터 증가
+					atomic.AddInt64(&completedCount, 1)
 				}
 			}
 		}()
@@ -1869,7 +1898,7 @@ func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Sta
 	// 실시간 대시보드 고루틴
 	var dashboardWG sync.WaitGroup
 	dashboardWG.Add(1)
-	done := make(chan bool)
+	done := make(chan bool, 1)
 	
 	go func() {
 		defer dashboardWG.Done()
@@ -1879,7 +1908,7 @@ func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Sta
 		for {
 			select {
 			case <-ticker.C:
-				completed := atomic.LoadInt64(&dt.totalCount)
+				completed := atomic.LoadInt64(&completedCount)
 				if completed >= int64(numClients) {
 					return
 				}
@@ -1890,17 +1919,22 @@ func (dt *DHCPTester) runTestWithLiveStats(numClients int, concurrency int) *Sta
 		}
 	}()
 	
-	// 결과 수집
+	// 모든 작업 완료 대기
 	go func() {
 		wg.Wait()
-		close(resultChan)
 		done <- true
 	}()
 	
-	for result := range resultChan {
-		dt.resultsMutex.Lock()
-		dt.results = append(dt.results, result)
-		dt.resultsMutex.Unlock()
+	// 모든 작업이 완료될 때까지 대기
+	for {
+		completed := atomic.LoadInt64(&completedCount)
+		if completed >= int64(numClients) {
+			break
+		}
+		time.Sleep(50 * time.Millisecond)
+		
+		// 진행 상황 표시
+		dt.printLiveDashboard(numClients, time.Since(startTime))
 	}
 	
 	dashboardWG.Wait()
