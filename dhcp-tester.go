@@ -798,18 +798,22 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	fmt.Println("\n")
 	
 	// DHCP 단계별 통계
-	fmt.Printf("%s%s┌─ DHCP 4-Way Handshake 실시간 통계 ────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s┌─ DHCP 4-Way Handshake 실시간 통계 ───────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
 	discoverSent := atomic.LoadInt64(&dt.liveStats.DiscoverSent)
 	offerReceived := atomic.LoadInt64(&dt.liveStats.OfferReceived)
 	requestSent := atomic.LoadInt64(&dt.liveStats.RequestSent)
 	ackReceived := atomic.LoadInt64(&dt.liveStats.AckReceived)
 	
-	fmt.Printf("%s│%s  1. %sDISCOVER%s 전송:  %s%8d%s 개    ", ANSI_BLUE, ANSI_RESET, ANSI_CYAN, ANSI_RESET, ANSI_WHITE, discoverSent, ANSI_RESET)
-	fmt.Printf("3. %sREQUEST%s 전송:   %s%8d%s 개  %s%s│%s\n", ANSI_CYAN, ANSI_RESET, ANSI_WHITE, requestSent, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  1. %sDISCOVER%s 전송:  %s%8d%s 개     ", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_CYAN, ANSI_RESET, ANSI_WHITE, discoverSent, ANSI_RESET)
+	fmt.Printf("3. %sREQUEST%s 전송:  %s%8d%s 개    %s%s│%s\n", 
+		ANSI_CYAN, ANSI_RESET, ANSI_WHITE, requestSent, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
-	fmt.Printf("%s│%s  2. %sOFFER%s 수신:    %s%8d%s 개    ", ANSI_BLUE, ANSI_RESET, ANSI_GREEN, ANSI_RESET, ANSI_WHITE, offerReceived, ANSI_RESET)
-	fmt.Printf("4. %sACK%s 수신:      %s%8d%s 개  %s%s│%s\n", ANSI_GREEN, ANSI_RESET, ANSI_WHITE, ackReceived, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  2. %sOFFER%s 수신:     %s%8d%s 개     ", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_GREEN, ANSI_RESET, ANSI_WHITE, offerReceived, ANSI_RESET)
+	fmt.Printf("4. %sACK%s 수신:      %s%8d%s 개    %s%s│%s\n", 
+		ANSI_GREEN, ANSI_RESET, ANSI_WHITE, ackReceived, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
 	// 평균 응답 시간
 	dt.liveStats.mutex.RLock()
@@ -830,8 +834,9 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	}
 	dt.liveStats.mutex.RUnlock()
 	
-	fmt.Printf("%s│%s  평균 응답시간: D→O: %s%10v%s  R→A: %s%10v%s              %s%s│%s\n", 
-		ANSI_BLUE, ANSI_RESET, ANSI_YELLOW, avgDO, ANSI_RESET, ANSI_YELLOW, avgRA, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s%s│%s  평균 응답시간: D→O: %s%10v%s          R→A: %s%10v%s             %s%s│%s\n", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_YELLOW, avgDO, ANSI_RESET, 
+		ANSI_YELLOW, avgRA, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	
 	fmt.Printf("%s%s└──────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	fmt.Println()
@@ -842,8 +847,9 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	
 	if dt.securityConfig.Enabled && (securityBlocked > 0 || rateLimited > 0) {
 		fmt.Printf("%s%s┌─ 보안 통계 ──────────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
-		fmt.Printf("%s│%s  보안 차단: %s%8d%s 건    Rate Limit: %s%8d%s 건                %s%s│%s\n", 
-			ANSI_MAGENTA, ANSI_RESET, ANSI_RED, securityBlocked, ANSI_RESET, ANSI_RED, rateLimited, ANSI_RESET, ANSI_MAGENTA, ANSI_RESET)
+		fmt.Printf("%s%s│%s  보안 차단: %s%8d%s 건    Rate Limit: %s%8d%s 건                %s%s│%s\n", 
+			ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET, ANSI_RED, securityBlocked, ANSI_RESET, 
+			ANSI_RED, rateLimited, ANSI_RESET, ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
 		fmt.Printf("%s%s└──────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_MAGENTA, ANSI_RESET)
 		fmt.Println()
 	}
@@ -855,8 +861,9 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	if dt.performanceConfig.PacketPoolEnabled && (poolHits > 0 || poolMisses > 0) {
 		hitRatio := float64(poolHits) / float64(poolHits+poolMisses) * 100
 		fmt.Printf("%s%s┌─ 성능 통계 ──────────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
-		fmt.Printf("%s│%s  Pool Hit: %s%8d%s      Pool Miss: %s%8d%s      Hit Rate: %s%.1f%%%s  %s%s│%s\n", 
-			ANSI_CYAN, ANSI_RESET, ANSI_GREEN, poolHits, ANSI_RESET, ANSI_YELLOW, poolMisses, ANSI_RESET, ANSI_GREEN, hitRatio, ANSI_RESET, ANSI_CYAN, ANSI_RESET)
+		fmt.Printf("%s%s│%s  Pool Hit: %s%8d%s      Pool Miss: %s%8d%s      Hit Rate: %s%.1f%%%s   %s%s│%s\n", 
+			ANSI_BOLD, ANSI_CYAN, ANSI_RESET, ANSI_GREEN, poolHits, ANSI_RESET, 
+			ANSI_YELLOW, poolMisses, ANSI_RESET, ANSI_GREEN, hitRatio, ANSI_RESET, ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 		
 		// 워커 풀 통계
 		if dt.workerPool != nil {
@@ -865,8 +872,9 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 			if isRunning {
 				status = "실행중"
 			}
-			fmt.Printf("%s│%s  워커 풀: %s%s%s        큐 크기: %s%8d%s                          %s%s│%s\n", 
-				ANSI_CYAN, ANSI_RESET, ANSI_GREEN, status, ANSI_RESET, ANSI_YELLOW, queueSize, ANSI_RESET, ANSI_CYAN, ANSI_RESET)
+			fmt.Printf("%s%s│%s  워커 풀: %s%s%s         큐 크기: %s%8d%s                           %s%s│%s\n", 
+				ANSI_BOLD, ANSI_CYAN, ANSI_RESET, ANSI_GREEN, status, ANSI_RESET, 
+				ANSI_YELLOW, queueSize, ANSI_RESET, ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 		}
 		
 		fmt.Printf("%s%s└──────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
