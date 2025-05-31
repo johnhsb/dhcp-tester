@@ -290,8 +290,22 @@ func (wp *WorkerPool) Submit(job func()) bool {
 }
 
 func (wp *WorkerPool) Stop() {
+	// 이미 정지된 상태라면 리턴
+	if atomic.LoadInt64(&wp.running) == 0 {
+		return
+	}
+	
 	atomic.StoreInt64(&wp.running, 0)
-	close(wp.quit)
+	
+	// 채널이 이미 닫혔는지 확인하고 닫기
+	select {
+	case <-wp.quit:
+		// 이미 닫힌 채널
+		return
+	default:
+		close(wp.quit)
+	}
+	
 	wp.wg.Wait()
 }
 
@@ -732,7 +746,7 @@ func (dt *DHCPTester) printLiveDashboard(numClients int, elapsedTime time.Durati
 	
 	// 헤더
 	fmt.Printf("%s%s╔══════════════════════════════════════════════════════════════════════╗%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
-	fmt.Printf("%s%s║             DHCP 서버 성능 테스트 실시간 모니터 (보안 강화)               ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
+	fmt.Printf("%s%s║             DHCP 서버 성능 테스트 실시간 모니터 (보안 강화)          ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Printf("%s%s╚══════════════════════════════════════════════════════════════════════╝%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Println()
 	
@@ -2208,18 +2222,20 @@ func (stats *Statistics) PrintReport() {
 	}
 }
 
-// 리소스 정리
 func (dt *DHCPTester) Cleanup() {
 	if dt.securityLogger != nil {
 		dt.securityLogger.Close()
+		dt.securityLogger = nil
 	}
 	
 	if dt.workerPool != nil {
 		dt.workerPool.Stop()
+		dt.workerPool = nil
 	}
 	
 	if dt.connectionPool != nil {
 		dt.connectionPool.Close()
+		dt.connectionPool = nil
 	}
 	
 	if dt.verbose {

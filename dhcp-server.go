@@ -1606,7 +1606,7 @@ func (s *DHCPServer) printLiveStats() {
 	
 	// 헤더
 	fmt.Printf("%s%s╔════════════════════════════════════════════════════════════════════════╗%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
-	fmt.Printf("%s%s║               DHCP 서버 실시간 모니터링 (보안 강화)                      ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
+	fmt.Printf("%s%s║               DHCP 서버 실시간 모니터링 (보안 강화)                    ║%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Printf("%s%s╚════════════════════════════════════════════════════════════════════════╝%s\n", ANSI_BOLD, ANSI_CYAN, ANSI_RESET)
 	fmt.Println()
 	
@@ -1639,9 +1639,9 @@ func (s *DHCPServer) printLiveStats() {
 	nakTx := atomic.LoadInt64(&s.stats.NakSent)
 	
 	fmt.Printf("%s%s┌─ DHCP 메시지 통계 ──────────────────────────────────────────────────────┐%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
-	fmt.Printf("%s│%s  수신: DISCOVER %s%8d%s    REQUEST %s%8d%s                         %s%s│%s\n", 
-		ANSI_BLUE, ANSI_RESET, ANSI_WHITE, discoverRx, ANSI_RESET, ANSI_WHITE, requestRx, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
-	fmt.Printf("%s│%s  전송: OFFER    %s%8d%s    ACK     %s%8d%s    NAK %s%8d%s     %s%s│%s\n", 
+	fmt.Printf("%s%s│%s  수신: DISCOVER %s%8d%s    REQUEST %s%8d%s                           %s%s│%s\n", 
+		ANSI_BOLD, ANSI_BLUE, ANSI_RESET, ANSI_WHITE, discoverRx, ANSI_RESET, ANSI_WHITE, requestRx, ANSI_RESET, ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
+	fmt.Printf("%s│%s  전송: OFFER    %s%8d%s    ACK     %s%8d%s    NAK %s%8d%s            %s│%s\n", 
 		ANSI_BLUE, ANSI_RESET, ANSI_WHITE, offerTx, ANSI_RESET, ANSI_WHITE, ackTx, ANSI_RESET, ANSI_WHITE, nakTx, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
 	
 	// 성공률 계산
@@ -1651,7 +1651,7 @@ func (s *DHCPServer) printLiveStats() {
 	if totalProcessed > 0 {
 		successRate = float64(totalSuccess) / float64(totalProcessed) * 100
 	}
-	fmt.Printf("%s│%s  성공률: %s%.1f%%%s                                                  %s%s│%s\n", 
+	fmt.Printf("%s│%s  성공률: %s%.1f%%%s                                                  %s│%s\n", 
 		ANSI_BLUE, ANSI_RESET, ANSI_GREEN, successRate, ANSI_RESET, ANSI_BLUE, ANSI_RESET)
 	fmt.Printf("%s%s└────────────────────────────────────────────────────────────────────────┘%s\n", ANSI_BOLD, ANSI_BLUE, ANSI_RESET)
 	fmt.Println()
